@@ -26,13 +26,24 @@ const Simulation = () => {
           jobPosition,
           jobDetails,
           selfIntroduction,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
         }
       );
 
       console.log("AI 응답:", response.data.questions);
+      console.log("세션번호", response.data.session_no);
 
       // 시뮬레이션 페이지로 이동
-      navigate("/app/test", { state: { questions: response.data.questions } });
+      navigate("/app/test", {
+        state: {
+          questions: response.data.questions,
+          session_no: response.data.session_no,
+        },
+      });
     } catch (error) {
       console.error("AI 정보 전송 실패:", error);
       setErrorMessage("정보를 전송하는 중 오류가 발생했습니다.");

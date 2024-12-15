@@ -7,12 +7,16 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Test = () => {
   const location = useLocation(); // 질문 데이터 받기
-  const questions = location.state?.questions || []; // 전달된 질문 데이터
+  const initQuestions = location.state?.questions || []; // 전달받은 질문 데이터
+  const session_no = location.state?.session_no; // 전달받은 세션 번호
+
+  const [questions, setQuestions] = useState(initQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isFollowUp, setIsFollowUp] = useState(false); // 꼬리질문 여부
   const [feedback, setFeedback] = useState(false); // 피드백 준비 여부
+  const [interviewSet, setInterviewSet] = useState([]); //질문,답변 셋 저장
 
   // 현재 질문 가져오기
   const currentQuestion = questions[currentQuestionIndex];
@@ -31,12 +35,27 @@ const Test = () => {
 
   // 답변 전송 및 저장
   const handleSendAnswer = async () => {
+    const updateInterview = [
+      ...interviewSet,
+      [questions[currentQuestionIndex], answers[currentQuestionIndex]],
+    ];
+    setInterviewSet(updateInterview);
+
     try {
-      await axios.post(`${API_BASE_URL}/save-answer`, {
-        index: currentQuestionIndex,
-        question: questions[currentQuestionIndex],
-        answer: answers[currentQuestionIndex] || "",
-      });
+      await axios.post(
+        `${API_BASE_URL}/ai/saveInterview`,
+        {
+          interview_question_no: currentQuestionIndex,
+          session_no,
+          interview_question: questions[currentQuestionIndex],
+          interview_answer: answers[currentQuestionIndex] || "",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
     } catch (error) {
       console.error("답변 저장 실패", error);
     }
@@ -49,12 +68,13 @@ const Test = () => {
   const handleFollowUp = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/generate-followup`);
-      setQuestions((prevQuestions) => [
-        ...prevQuestions,
-        ...response.data.questions,
-      ]);
-      setCurrentQuestionIndex(questions.length); // 새 질문 시작
+      const response = await axios.post(
+        `${API_BASE_URL}/ai/generate-followup`,
+        { interviewSet }
+      );
+      console.log(response.data);
+      setQuestions((prev) => [...prev, ...response.data.questions]);
+      setCurrentQuestionIndex(5); // 새 질문 시작
     } catch (error) {
       console.error("꼬리질문 생성 실패", error);
     } finally {
@@ -66,10 +86,15 @@ const Test = () => {
   const handleFeedback = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/generate-feedback`, {
-        questions,
-        answers,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/ai/generate-feedback`,
+        { interviewSet, session_no },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
       console.log("GPT 피드백:", response.data.feedback);
       alert("피드백이 생성되었습니다!");
     } catch (error) {
