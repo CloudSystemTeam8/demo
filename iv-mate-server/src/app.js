@@ -18,7 +18,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // // 라우트 설정
 const authRouter = require("../routes/auth.js");
+const aiRouter = require("../routes/ai.js");
 app.use("/auth", authRouter);
+app.use("/ai", aiRouter);
 
 // 기본 라우트
 app.get("/", (req, res) => {
