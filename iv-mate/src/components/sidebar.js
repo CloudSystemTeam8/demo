@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import "../css/sidebar.css";
 import Home from "../assets/home-gray.svg";
 import HomeSelect from "../assets/home-select.svg";
@@ -8,10 +9,38 @@ import SimulationSelect from "../assets/notebook-select.svg";
 import Mypage from "../assets/user-gray.svg";
 import MypageSelect from "../assets/user-select.svg";
 import SubLogo from "../assets/sub-logo.svg";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [userEmail, setUserEmail] = useState("");
+  const [userNickname, setUserNickname] = useState("");
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const token = localStorage.getItem("userToken");
+
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      try {
+        const response = axios.get(`${API_BASE_URL}/auth/userInfo`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response) {
+          setUserEmail((await response).data.email);
+          setUserNickname((await response).data.nickname);
+        }
+      } catch (error) {
+        console.error("사용자 정보를 불러오는데 실패했습니다.", error);
+        navigate("/");
+      }
+    };
+    fetchUserInfo();
+  }, [navigate]);
 
   // 메뉴 항목
   const menuItems = [
@@ -36,8 +65,8 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("userNickname");
 
     // 로그인 페이지로 이동
     navigate("/");
@@ -51,10 +80,12 @@ const Sidebar = () => {
 
       <div className="sidebar-info">
         <div className="sidebar-nick">
-          <h3>눈송이 님, 취뽀까지 화이팅!</h3>
+          <h3>
+            {userNickname ? `${userNickname} 님, 취뽀까지 화이팅!` : "..."}
+          </h3>
         </div>
         <p>로그인 정보</p>
-        <p>noonsong@sookmyung.ac.kr</p>
+        <p>{userEmail ? userEmail : "..."}</p>
         <button className="logout-button" onClick={handleLogout}>
           LOGOUT
         </button>

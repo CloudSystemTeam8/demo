@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const db = require("./db");
+const db = require("./db.js");
 // const server = require("http").createServer(app);
+require("dotenv").config();
 
 const app = express();
 
@@ -16,9 +17,9 @@ app.use(express.json()); // JSON 요청 본문 파싱
 app.use(express.urlencoded({ extended: true }));
 
 // // 라우트 설정
-// app.use("/api/", recordsRoutes);
-// const authRouter = require("./routes/auth");
-// app.use("/auth", authRouter);
+const authRouter = require("../routes/auth.js");
+app.use("/auth", authRouter);
+
 // 기본 라우트
 app.get("/", (req, res) => {
   res.send("Node.js 백엔드가 실행 중입니다!");

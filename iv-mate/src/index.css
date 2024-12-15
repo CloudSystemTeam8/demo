@@ -49,3 +49,7 @@ body {
   padding: 2rem;
   overflow-y: auto;
 }
+
+.error {
+  color: #ff0000;
+}
