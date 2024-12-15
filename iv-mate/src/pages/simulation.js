@@ -1,21 +1,42 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../css/simulation.css";
-import Note from "../assets/Vector.svg";
 
 const Simulation = () => {
   const navigate = useNavigate();
   const [jobPosition, setJobPosition] = useState("");
   const [jobDetails, setJobDetails] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 상태 추가
   const maxLength = 1500;
 
-  const handleNextClick = () => {
-    // 사용자가 입력한 데이터를 기반으로 테스트 페이지로 이동
-    // 백엔드 코드 필요
-    navigate("/app/test", {
-      state: { jobPosition, jobDetails, selfIntroduction },
-    });
+  const handleNextClick = async () => {
+    try {
+      // 모든 입력값이 있는지 확인
+      if (!jobPosition || !jobDetails || !selfIntroduction) {
+        setErrorMessage("모든 필드를 작성해주세요.");
+        return;
+      }
+
+      // AI 정보 전송
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/ai/sendInfo`,
+        {
+          jobPosition,
+          jobDetails,
+          selfIntroduction,
+        }
+      );
+
+      console.log("AI 응답:", response.data);
+
+      // 시뮬레이션 페이지로 이동
+      navigate("/app/test", { state: { questions: response.data.questions } });
+    } catch (error) {
+      console.error("AI 정보 전송 실패:", error);
+      setErrorMessage("정보를 전송하는 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -68,6 +89,9 @@ const Simulation = () => {
             {selfIntroduction.length} / {maxLength}자
           </p>
         </div>
+
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
+
         <button
           className="next-button"
           onClick={handleNextClick}
