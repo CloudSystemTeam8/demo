@@ -1,6 +1,9 @@
-const express = require("express");
-const cors = require("cors");
-const db = require("./db");
+import express from "express";
+import cors from "cors";
+import db from "./db.js";
+import { callChatGPT } from "./chatgpt.js";
+import dotenv from 'dotenv';
+dotenv.config();
 // const server = require("http").createServer(app);
 
 const app = express();
@@ -22,7 +25,21 @@ app.use(express.urlencoded({ extended: true }));
 // 기본 라우트
 app.get("/", (req, res) => {
   res.send("Node.js 백엔드가 실행 중입니다!");
+  res.render('askgpt', {pass: true})
 });
+
+//ask 라우트 추가: 면접 질문 생성 요청을 받음
+app.post("/ask", async (req, res) => {
+  const prompt = "면접 질문 5개 생성해줘"; // 이 부분을 사용자가 원하는 질문으로 동적으로 바꿀 수도 있음
+  const response = await callChatGPT(prompt);
+
+  if (response) {
+    res.json({ response: response });
+  } else {
+    res.status(500).json({ error: 'ChatGPT API 호출 실패' });
+  }
+});
+
 
 // 서버 실행
 const PORT = process.env.PORT || 5001;
