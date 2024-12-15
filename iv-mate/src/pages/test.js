@@ -37,7 +37,10 @@ const Test = () => {
   const handleSendAnswer = async () => {
     const updateInterview = [
       ...interviewSet,
-      [questions[currentQuestionIndex], answers[currentQuestionIndex]],
+      {
+        question: questions[currentQuestionIndex],
+        answer: answers[currentQuestionIndex],
+      },
     ];
     setInterviewSet(updateInterview);
 
