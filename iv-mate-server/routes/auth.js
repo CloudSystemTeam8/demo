@@ -159,8 +159,6 @@ router.get("/userInfo", (req, res) => {
         message: "user_not_found",
       });
     }
-    console.log(results[0].email);
-    console.log(results[0].nickname);
 
     return res.status(200).json({
       email: results[0].email,
