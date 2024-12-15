@@ -2,7 +2,7 @@ var express = require("express");
 const router = express.Router();
 var db = require("../src/db.js");
 var sql = require("../sql.js");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // 이메일 체크
@@ -56,7 +56,7 @@ router.get("/nick_check/:nickname", (req, res) => {
 router.post("/register", (req, res) => {
   const user = req.body;
   console.log(user);
-  const encryptedPW = bcrypt.hashSync(user.password, 10); // 비밀번호 암호화
+  const encryptedPW = bcrypt.hash(user.password, 10); // 비밀번호 암호화
 
   db.query(sql.email_check, [user.email], function (error, results, fields) {
     if (error) {
@@ -100,7 +100,7 @@ router.post("/login", (req, res) => {
     if (results.length != 0) {
       db.query(sql.login, [user.email], function (error, results, fields) {
         // 암호화 된 비밀번호 확인
-        const same = bcrypt.compareSync(user.password, results[0].password);
+        const same = bcrypt.compare(user.password, results[0].password);
         if (!same) {
           // 비밀번호 불일치
           return res.status(200).json({

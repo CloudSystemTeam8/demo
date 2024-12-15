@@ -2,7 +2,6 @@ var express = require("express");
 const router = express.Router();
 var db = require("../src/db.js");
 var sql = require("../sql.js");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 module.exports = router;
