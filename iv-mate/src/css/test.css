@@ -14,13 +14,24 @@
 }
 
 textarea {
-  width: 100%;
+  width: 94%;
+  max-width: 800px;
   height: 150px;
   border: 1px solid var(--unselect-color);
   border-radius: 8px;
   padding: 0.75rem;
   margin-top: 1rem;
   font-family: var(--font-content);
+}
+.answer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.send_button {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }
 
 button {
@@ -38,6 +49,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.followup-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
 .followup-container button {
-  margin-right: 1rem;
+  margin: 0 3rem;
 }

@@ -21,7 +21,7 @@ const Simulation = () => {
 
       // AI 정보 전송
       const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/ai/sendInfo`,
+        `${process.env.REACT_APP_API_BASE_URL}/ai/sendInfoo`,
         {
           jobPosition,
           jobDetails,
@@ -29,7 +29,7 @@ const Simulation = () => {
         }
       );
 
-      console.log("AI 응답:", response.data);
+      console.log("AI 응답:", response.data.questions);
 
       // 시뮬레이션 페이지로 이동
       navigate("/app/test", { state: { questions: response.data.questions } });
