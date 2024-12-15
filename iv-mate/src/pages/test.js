@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/test.css";
 
@@ -17,6 +17,7 @@ const Test = () => {
   const [isFollowUp, setIsFollowUp] = useState(false); // 꼬리질문 여부
   const [feedback, setFeedback] = useState(false); // 피드백 준비 여부
   const [interviewSet, setInterviewSet] = useState([]); //질문,답변 셋 저장
+  const navigate = useNavigate();
 
   // 현재 질문 가져오기
   const currentQuestion = questions[currentQuestionIndex];
@@ -25,7 +26,6 @@ const Test = () => {
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1); // 다음 질문으로 이동
-      console.log(currentQuestionIndex);
     } else if (!isFollowUp) {
       setIsFollowUp(true); // 꼬리질문 준비
     } else {
@@ -95,8 +95,9 @@ const Test = () => {
           },
         }
       );
-      console.log("GPT 피드백:", response.data.feedback);
+      console.log(response.data.message);
       alert("피드백이 생성되었습니다!");
+      navigate("/app/feedback");
     } catch (error) {
       console.error("피드백 생성 실패", error);
     } finally {

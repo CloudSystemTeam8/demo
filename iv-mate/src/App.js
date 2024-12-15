@@ -7,6 +7,7 @@ import Home from "./pages/home";
 import Simulation from "./pages/simulation";
 import Mypage from "./pages/mypage";
 import Test from "./pages/test";
+import Feedback from "./pages/feedback";
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
                   <Route path="simulation" element={<Simulation />} />
                   <Route path="mypage" element={<Mypage />} />
                   <Route path="test" element={<Test />} />
+                  <Route path="feedback" element={<Feedback />} />
                 </Routes>
               </div>
             </div>

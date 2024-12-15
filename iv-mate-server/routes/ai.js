@@ -24,50 +24,46 @@ router.post("/sendInfoo", (req, res) => {
   console.log("사용자 번호:", user_no, "직무:", user.jobDetails);
 
   // DB 세션 생성
-  db.query(
-    `INSERT INTO SESSION (user_no, session_job, session_status) VALUES (?, ?, '진행중')`,
-    [user_no, user.jobDetails],
-    (err, results) => {
+  db.query(sql.get_jobinfo, [user_no, user.jobDetails], (err, results) => {
+    if (err) {
+      console.error("DB 오류:", err);
+      return res.status(500).json({ error: "DB 저장 실패" });
+    }
+
+    // `LAST_INSERT_ID()`로 삽입된 session_no 가져오기
+    db.query(sql.get_sessionNo, (err, rows) => {
       if (err) {
-        console.error("DB 오류:", err);
-        return res.status(500).json({ error: "DB 저장 실패" });
+        console.error("ID 조회 실패:", err);
+        return res.status(500).json({ error: "Session ID 조회 실패" });
       }
 
-      // `LAST_INSERT_ID()`로 삽입된 session_no 가져오기
-      db.query("SELECT LAST_INSERT_ID() AS session_no", (err, rows) => {
-        if (err) {
-          console.error("ID 조회 실패:", err);
-          return res.status(500).json({ error: "Session ID 조회 실패" });
-        }
+      session_no = rows[0]?.session_no;
+      if (!session_no) {
+        return res
+          .status(500)
+          .json({ error: "Session ID를 찾을 수 없습니다." });
+      }
 
-        session_no = rows[0]?.session_no;
-        if (!session_no) {
-          return res
-            .status(500)
-            .json({ error: "Session ID를 찾을 수 없습니다." });
-        }
+      console.log("생성된 세션 번호:", session_no);
 
-        console.log("생성된 세션 번호:", session_no);
+      // GPT 질문 생성
+      const rawResponse =
+        "1. 본인을 간단히 소개해주세요.\n2. 왜 이 회사에 지원하게 되었나요?\n3. 과거에 어려웠던 경험을 어떻게 극복했는지 설명해 주세요.\n4. 현재까지의 경력을 통해 얻은 교훈 중에서 가장 큰 것은 무엇이었나요?\n5. 마지막 포부를 말씀해주세요.";
 
-        // GPT 질문 생성
-        const rawResponse =
-          "1. 본인을 간단히 소개해주세요.\n2. 왜 이 회사에 지원하게 되었나요?\n3. 과거에 어려웠던 경험을 어떻게 극복했는지 설명해 주세요.\n4. 현재까지의 경력을 통해 얻은 교훈 중에서 가장 큰 것은 무엇이었나요?\n5. 마지막 포부를 말씀해주세요.";
+      // 질문 배열로 변환
+      const questions = rawResponse
+        .split("\n")
+        .map((question) => question.replace(/^\d+\.\s*/, "").trim())
+        .filter((question) => question);
 
-        // 질문 배열로 변환
-        const questions = rawResponse
-          .split("\n")
-          .map((question) => question.replace(/^\d+\.\s*/, "").trim())
-          .filter((question) => question);
-
-        // 최종 응답
-        return res.json({
-          message: "Session 시작 및 질문 생성 완료",
-          session_no,
-          questions,
-        });
+      // 최종 응답
+      return res.json({
+        message: "Session 시작 및 질문 생성 완료",
+        session_no,
+        questions,
       });
-    }
-  );
+    });
+  });
 });
 
 // 꼬리질문 생성
@@ -152,19 +148,6 @@ router.post("/generate-feedback", async (req, res) => {
   }
 });
 
-// //세션 생성(직무, 자소서 정보 저장)
-// router.post("/sendInfo", (req, res) => {
-//   const { user_no, session_job } = req.body;
-
-//   db.query(sql.get_jobinfo, [user_no, session_job], (err, results) => {
-//     if (err) {
-//       console.error("오류: ", err);
-//       return res.status(500).json({ error: "Database query failed" });
-//     }
-//     res.json({ message: "Session 시작", data: results });
-//   });
-// });
-
 //인터뷰 내용 저장
 router.post("/saveInterview", (req, res) => {
   // 사용자 토큰 검증
@@ -216,23 +199,6 @@ router.get("/getInterview", (req, res) => {
   });
 });
 
-// //AI 피드백 저장
-// router.post("/saveAIResult", (req, res) => {
-//   const { user_no, session_no, ai_result_content } = req.body;
-
-//   db.query(
-//     sql.save_airesult,
-//     [user_no, session_no, ai_result_content],
-//     (err, results) => {
-//       if (err) {
-//         console.error("오류:", err);
-//         return res.status(500).json({ error: "Database query failed" });
-//       }
-//       res.json({ message: "AI 피드백 저장됨", data: results });
-//     }
-//   );
-// });
-
 //AI 피드백 불러오기
 router.get("/getAIResult", (req, res) => {
   const { user_no, session_no } = req.query; // 사용자 번호와 세션 번호로 조회
@@ -245,19 +211,6 @@ router.get("/getAIResult", (req, res) => {
     res.json(results); // AI 피드백 반환
   });
 });
-
-// //세션 종료
-// router.post("/endSession", (req, res) => {
-//   const { session_no } = req.body;
-
-//   db.query(sql.update_session, [session_no], (err, results) => {
-//     if (err) {
-//       console.error("오류:", err);
-//       return res.status(500).json({ error: "Failed to end session" });
-//     }
-//     res.json({ message: "Session 종료됨", data: results });
-//   });
-// });
 
 //사용자 인터뷰 시간 정보 전송
 router.get("/getSessionDate", (req, res) => {
@@ -288,3 +241,46 @@ router.get("/getDateInterview", (req, res) => {
 });
 
 module.exports = router;
+
+// //세션 생성(직무, 자소서 정보 저장)
+// router.post("/sendInfo", (req, res) => {
+//   const { user_no, session_job } = req.body;
+
+//   db.query(sql.get_jobinfo, [user_no, session_job], (err, results) => {
+//     if (err) {
+//       console.error("오류: ", err);
+//       return res.status(500).json({ error: "Database query failed" });
+//     }
+//     res.json({ message: "Session 시작", data: results });
+//   });
+// });
+
+// //세션 종료
+// router.post("/endSession", (req, res) => {
+//   const { session_no } = req.body;
+
+//   db.query(sql.update_session, [session_no], (err, results) => {
+//     if (err) {
+//       console.error("오류:", err);
+//       return res.status(500).json({ error: "Failed to end session" });
+//     }
+//     res.json({ message: "Session 종료됨", data: results });
+//   });
+// });
+
+// //AI 피드백 저장
+// router.post("/saveAIResult", (req, res) => {
+//   const { user_no, session_no, ai_result_content } = req.body;
+
+//   db.query(
+//     sql.save_airesult,
+//     [user_no, session_no, ai_result_content],
+//     (err, results) => {
+//       if (err) {
+//         console.error("오류:", err);
+//         return res.status(500).json({ error: "Database query failed" });
+//       }
+//       res.json({ message: "AI 피드백 저장됨", data: results });
+//     }
+//   );
+// });
