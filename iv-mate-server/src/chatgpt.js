@@ -6,12 +6,13 @@ config();
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY  // 환경 변수로 API 키 설정
 });
+console.log("OpenAI API Key:", process.env.OPENAI_API_KEY);
 
 // callChatGPT 함수 정의
 export const callChatGPT = async (prompt) => {
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",  // 원하는 모델 설정
+      model: "gpt-3.5-turbo",  // 원하는 모델 설정
       messages: [
         { role: "system", content: "You are a helpful assistant." },
         { role: "user", content: prompt },
