@@ -22,11 +22,12 @@ router.post("/sendInfoo", (req, res) => {
 
   // 클라이언트로 배열 응답
   res.json({ questions });
+});
 
 //세션 생성(직무, 자소서 정보 저장)
 router.post("/sendInfo", (req, res) => {
   const { user_no, session_job } = req.body;
-  
+
   db.query(sql.get_jobinfo, [user_no, session_job], (err, results) => {
     if (err) {
       console.error("오류: ", err);
@@ -34,20 +35,35 @@ router.post("/sendInfo", (req, res) => {
     }
     res.json({ message: "Session 시작", data: results });
   });
-
 });
 
 //인터뷰 내용 저장
 router.post("/saveInterview", (req, res) => {
-  const { user_no, session_no, interview_question, interview_answer, interview_question_no } = req.body;
+  const {
+    user_no,
+    session_no,
+    interview_question,
+    interview_answer,
+    interview_question_no,
+  } = req.body;
 
-  db.query(sql.save_interview, [user_no, session_no, interview_question, interview_answer, interview_question_no], (err, results) => {
-    if (err) {
-      console.error("오류: ", err);
-      return res.status(500).json({ error: "Database query failed" });
+  db.query(
+    sql.save_interview,
+    [
+      user_no,
+      session_no,
+      interview_question,
+      interview_answer,
+      interview_question_no,
+    ],
+    (err, results) => {
+      if (err) {
+        console.error("오류: ", err);
+        return res.status(500).json({ error: "Database query failed" });
+      }
+      res.json({ message: "Interview 저장됨", data: results });
     }
-    res.json({ message: "Interview 저장됨", data: results });
-  });
+  );
 });
 
 //인터뷰 내용 조회(gpt 전송 위함)
@@ -67,13 +83,17 @@ router.get("/getInterview", (req, res) => {
 router.post("/saveAIResult", (req, res) => {
   const { user_no, session_no, ai_result_content } = req.body;
 
-  db.query(sql.save_airesult, [user_no, session_no, ai_result_content], (err, results) => {
-    if (err) {
-      console.error("오류:", err);
-      return res.status(500).json({ error: "Database query failed" });
+  db.query(
+    sql.save_airesult,
+    [user_no, session_no, ai_result_content],
+    (err, results) => {
+      if (err) {
+        console.error("오류:", err);
+        return res.status(500).json({ error: "Database query failed" });
+      }
+      res.json({ message: "AI 피드백 저장됨", data: results });
     }
-    res.json({ message: "AI 피드백 저장됨", data: results });
-  });
+  );
 });
 
 //AI 피드백 불러오기
@@ -122,7 +142,9 @@ router.get("/getDateInterview", (req, res) => {
   db.query(sql.get_dateinterview, [user_no, selected_date], (err, results) => {
     if (err) {
       console.error("오류:", err);
-      return res.status(500).json({ error: "Failed to fetch interview information" });
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch interview information" });
     }
     res.json(results);
   });
