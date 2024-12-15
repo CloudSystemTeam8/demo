@@ -1,0 +1,108 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--background-color);
+}
+
+.login-form {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-family: var(--font-logo);
+  font-size: 2rem;
+  margin: 1rem;
+  color: var(--text-color);
+}
+.logo h3 {
+  margin-left: 1rem;
+}
+
+.login-form h2 {
+  margin-bottom: 1.5rem;
+  font-family: var(--font-content);
+  font-size: 1.5rem;
+}
+
+.login-form input {
+  width: 90%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--unselect-color);
+  border-radius: 8px;
+  font-family: var(--font-content);
+}
+
+.login-form p {
+  display: flex;
+  justify-content: left;
+  margin-left: 0.5rem;
+  font-size: 14px;
+}
+
+.login-button {
+  width: 96%;
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-content);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.login-button:hover {
+  background-color: var(--button-hover);
+}
+
+.join-button {
+  width: 96%;
+  border: 1px solid var(--unselect-color);
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: white;
+  font-family: var(--font-content);
+  color: var(--unselect-color);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.join-button:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2.5rem 0 1.5rem 0;
+}
+
+.divider hr {
+  flex: 1;
+  width: 200px;
+  border-top: 1px solid var(--unselect-color);
+  margin: 0 0.5rem;
+}
+
+.divider span {
+  font-size: 0.875rem;
+  color: var(--unselect-color);
+}

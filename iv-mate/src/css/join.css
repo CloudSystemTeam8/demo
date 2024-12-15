@@ -1,0 +1,101 @@
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--background-color);
+}
+
+.signup-form {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-family: var(--font-logo);
+  font-size: 2rem;
+  margin: 1rem;
+  color: var(--text-color);
+}
+.logo h3 {
+  margin-left: 1rem;
+}
+
+.signup-form h2 {
+  margin-bottom: 1.5rem;
+  font-family: var(--font-content);
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+.signup-form input {
+  width: 90%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--unselect-color);
+  border-radius: 8px;
+  font-family: var(--font-content);
+}
+.signup-form p {
+  display: flex;
+  justify-content: left;
+  margin-left: 0.5rem;
+  font-size: 14px;
+}
+
+.nickname {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.nickname input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--unselect-color);
+  border-radius: 8px;
+}
+
+.duplicate-check-button {
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  font-family: var(--font-content);
+  font-size: 0.875rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0.2rem;
+}
+
+.duplicate-check-button.checked {
+  background: var(--unselect-color);
+  cursor: default;
+}
+
+.signup-button {
+  width: 100%;
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-content);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.signup-button:hover {
+  background-color: var(--button-hover);
+}

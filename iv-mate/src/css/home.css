@@ -1,0 +1,82 @@
+.homepage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  width: 100%;
+  background-color: #ffffff;
+  color: var(--text-color);
+  font-family: var(--font-content);
+}
+
+.homepage-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--primary-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.homepage-header h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.start-button {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+.start-button:hover {
+  background-color: var(--button-hover);
+  border: 2px solid var(--button-hover);
+  color: #ffffff;
+}
+
+.homepage-content {
+  background: var(--background-color);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 2rem 1rem 1rem 1rem;
+}
+
+.homepage-content h2 {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.homepage-content ul {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.homepage-content ul li {
+  margin-bottom: 0.75rem;
+  color: var(--text-color);
+}
+
+.homepage-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--unselect-color);
+}

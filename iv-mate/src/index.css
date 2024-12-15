@@ -1,0 +1,51 @@
+/* Pretendard - 내용폰트 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
+/* HSSanTokki20-Regular - 로고 폰트 */
+@font-face {
+  font-family: "HSSanTokki20-Regular";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2405@1.0/HSSanTokki20-Regular.woff2")
+    format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --font-content: "Pretendard", sans-serif;
+  --font-logo: "HSSanTokki20-Regular", sans-serif;
+
+  /* 색상 */
+  --primary-color: #1f64ff;
+  --secondary-color: #cedfff;
+  --background-color: #f5f6fa;
+  --text-color: #000000;
+  --unselect-color: #aab2c8;
+  --button-hover: #1447b8;
+}
+
+body {
+  font-family: var(--font-content);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  //background: #ffffff;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--background-color);
+}
+
+.main-content {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 2rem;
+  overflow-y: auto;
+}
