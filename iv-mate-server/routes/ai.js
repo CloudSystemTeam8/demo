@@ -108,7 +108,7 @@ router.post("/generate-followup", async(req, res) => {
 
 router.post("/generate-feedback", async (req, res) => {
   try {
-    // 1. 사용자 토큰 검증
+    // 사용자 토큰 검증
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -116,7 +116,7 @@ router.post("/generate-feedback", async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user_no = decoded.no;
 
-    // 2. 요청 데이터 확인
+    // 요청 데이터 확인
     const { session_no, interviewSet } = req.body;
     if (!session_no || !interviewSet) {
       return res
@@ -128,7 +128,7 @@ router.post("/generate-feedback", async (req, res) => {
     console.log("세션 번호:", session_no);
     console.log("최종 인터뷰 데이터:", interviewSet);
 
-    // 3. 세션 종료 처리
+    // 세션 종료 처리
     await new Promise((resolve, reject) => {
       db.query(sql.update_session, [session_no], (err, results) => {
         if (err) {
@@ -139,10 +139,23 @@ router.post("/generate-feedback", async (req, res) => {
       });
     });
 
-    // 4. GPT 요청 처리 (테스트용으로 하드코딩된 데이터 사용)
-    const ai_result_content = "GPT에서 생성된 피드백 데이터";
+    // GPT 요청 처리
+    let interviewText = interviewSet
+      .map((entry, index) => {
+        return `Q${index + 1}: ${entry.question}\nA${index + 1}: ${entry.answer}`;
+      })
+      .join("\n\n");
+    
+    const prompt = `
+    사용자가 아래와 같은 인터뷰 질문과 답변을 제공했습니다. 각 질문에 대해 적절한 피드백을 작성해 주세요:
+    ${interviewText}
+    피드백을 작성할 때, 각 답변에 대한 긍정적인 피드백을 주고, 개선할 부분이 있으면 구체적으로 언급해주세요.`;
 
-    // 5. 결과 저장
+    const ai_result_content = await callChatGPT(prompt);
+
+    console.log("GPT 피드백 결과:", ai_result_content);
+
+    // 결과 저장
     const result_no = await new Promise((resolve, reject) => {
       db.query(
         sql.save_airesult,
@@ -157,7 +170,7 @@ router.post("/generate-feedback", async (req, res) => {
       );
     });
 
-    // 6. 최종 응답
+    // 최종 응답
     return res.json({
       message: "Session 종료 및 피드백 생성 완료",
       result_no,
