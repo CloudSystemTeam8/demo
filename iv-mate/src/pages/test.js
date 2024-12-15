@@ -97,7 +97,7 @@ const Test = () => {
       );
       console.log(response.data.message);
       alert("피드백이 생성되었습니다!");
-      navigate("/app/feedback");
+      navigate("/app/feedback", { state: { session_no: session_no } });
     } catch (error) {
       console.error("피드백 생성 실패", error);
     } finally {

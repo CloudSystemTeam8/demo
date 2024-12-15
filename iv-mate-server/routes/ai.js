@@ -201,14 +201,29 @@ router.get("/getInterview", (req, res) => {
 
 //AI 피드백 불러오기
 router.get("/getAIResult", (req, res) => {
-  const { user_no, session_no } = req.query; // 사용자 번호와 세션 번호로 조회
+  // 사용자 토큰 검증
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user_no = decoded.no;
+  const session_no = req.query.session_no;
+
+  if (!session_no) {
+    return res.status(400).json({ message: "Session 번호가 필요합니다." });
+  }
+
+  console.log(user_no, session_no);
 
   db.query(sql.get_airesult, [user_no, session_no], (err, results) => {
     if (err) {
       console.error("오류:", err);
       return res.status(500).json({ error: "Database query failed" });
     }
-    res.json(results); // AI 피드백 반환
+    console.log(results);
+    res.json(results[0]); // AI 피드백 반환
   });
 });
 
