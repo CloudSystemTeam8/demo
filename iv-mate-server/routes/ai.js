@@ -3,10 +3,11 @@ const router = express.Router();
 var db = require("../src/db.js");
 var sql = require("../sql.js");
 const jwt = require("jsonwebtoken");
+const { callChatGPT } = require("../src/chatgpt");
 
 module.exports = router;
 
-router.post("/sendInfoo", (req, res) => {
+router.post("/sendInfoo", async (req, res) => {
   // 사용자 토큰 검증
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -24,14 +25,14 @@ router.post("/sendInfoo", (req, res) => {
   console.log("사용자 번호:", user_no, "직무:", user.jobDetails);
 
   // DB 세션 생성
-  db.query(sql.get_jobinfo, [user_no, user.jobDetails], (err, results) => {
+  db.query(sql.get_jobinfo, [user_no, user.jobDetails], async (err, results) => {
     if (err) {
       console.error("DB 오류:", err);
       return res.status(500).json({ error: "DB 저장 실패" });
     }
 
     // `LAST_INSERT_ID()`로 삽입된 session_no 가져오기
-    db.query(sql.get_sessionNo, (err, rows) => {
+    db.query(sql.get_sessionNo, async (err, rows) => {
       if (err) {
         console.error("ID 조회 실패:", err);
         return res.status(500).json({ error: "Session ID 조회 실패" });
@@ -47,37 +48,56 @@ router.post("/sendInfoo", (req, res) => {
       console.log("생성된 세션 번호:", session_no);
 
       // GPT 질문 생성
-      const rawResponse =
-        "1. 본인을 간단히 소개해주세요.\n2. 왜 이 회사에 지원하게 되었나요?\n3. 과거에 어려웠던 경험을 어떻게 극복했는지 설명해 주세요.\n4. 현재까지의 경력을 통해 얻은 교훈 중에서 가장 큰 것은 무엇이었나요?\n5. 마지막 포부를 말씀해주세요.";
+    const { jobPosition, jobDetails, selfIntroduction } = req.body;
+      const prompt = `
+      사용자가 아래와 같은 정보를 입력했습니다:
+      1. 직무: ${jobPosition}
+      2. 세부 직무: ${jobDetails}
+      3. 자기소개: ${selfIntroduction.trim()}
 
-      // 질문 배열로 변환
-      const questions = rawResponse
-        .split("\n")
-        .map((question) => question.replace(/^\d+\.\s*/, "").trim())
-        .filter((question) => question);
+      이 정보를 바탕으로 면접 질문 5개를 만들어 주세요.`;
+      try{  
+        // GPT API 호출
+      const gptResponse = await callChatGPT(prompt);
 
-      // 최종 응답
-      return res.json({
-        message: "Session 시작 및 질문 생성 완료",
-        session_no,
-        questions,
+      // 데이터를 배열로 정리
+      const questions = gptResponse
+      .split("\n") // 줄바꿈 기준으로 분리
+      .map((question) => question.replace(/^\d+\.\s*/, "").trim()) // 번호 제거
+      .filter((question) => question); // 빈 문자열 제거
+
+
+        // 최종 응답
+        return res.json({
+          message: "Session 시작 및 질문 생성 완료",
+          session_no,
+          questions,
+        });
+      }catch (error) {
+        console.error("GPT 호출 실패:", error);
+        return res.status(500).json({ error: "Failed to generate interview questions" });
+      }
       });
     });
   });
-});
 
 // 꼬리질문 생성
-router.post("/generate-followup", (req, res) => {
-  const init_ques = req.body;
-  console.log(init_ques);
+router.post("/generate-followup", async(req, res) => {
+  const Interviews = req.body.interviewSet
+  .map(([question, answer], index) => `Q${index + 1}: ${question}\nA${index + 1}: ${answer}`) // 각 질문-답 조합을 "Q1: 질문\nA1: 답" 형식으로 변환
+  .join("\n");
 
-  //  gpt 요청 코드
+  const prompt = `
+    아래 인터뷰 내용을 기반으로 꼬리 질문 3개를 만들어 주세요:
+    ${Interviews}
+    꼬리 질문 3개를 번호와 함께 작성해 주세요.`;
+    
+      // GPT API 호출
+    const gptResponse = await callChatGPT(prompt);
+    console.log("GPT Response:", gptResponse);
 
-  const rawResponse =
-    "1. 꼬리질문1 본인을 간단히 소개해주세요.\n2. 꼬리질문2 왜 이 회사에 지원하게 되었나요?\n3. 꼬리질문3 과거에 어려웠던 경험을 어떻게 극복했는지 설명해 주세요.";
-
-  // 데이터를 배열로 정리
-  const questions = rawResponse
+    // 데이터를 배열로 정리
+    const questions = gptResponse
     .split("\n") // 줄바꿈 기준으로 분리
     .map((question) => question.replace(/^\d+\.\s*/, "").trim()) // 번호 제거
     .filter((question) => question); // 빈 문자열 제거
