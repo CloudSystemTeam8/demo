@@ -7,6 +7,7 @@ module.exports = {
   user_no_get: `SELECT user_no, nickname FROM user WHERE email = ?`,
   get_userinfo: `SELECT email, nickname FROM user WHERE user_no = ?`,
 
+  
   // AI
   get_jobinfo: `INSERT INTO SESSION (user_no, session_job, session_status) VALUES (?, ?, '진행중')`,
   get_sessionNo: `SELECT LAST_INSERT_ID() AS session_no`,
