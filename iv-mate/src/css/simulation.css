@@ -61,6 +61,7 @@ label {
   border: 1px solid var(--unselect-color);
   border-radius: 8px;
   font-family: var(--font-content);
+  font-size: 1rem;
 }
 
 .simulation-form textarea {
