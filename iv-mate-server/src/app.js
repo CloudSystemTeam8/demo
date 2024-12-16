@@ -28,6 +28,11 @@ app.get("/", (req, res) => {
   res.send("Node.js 백엔드가 실행 중입니다!");
 });
 
+// livenessProbe용 헬스체크 엔드포인트 추가
+app.get("/health", (req, res) => {
+  res.status(200).send("OK"); // 서버가 정상적으로 작동 중임을 나타냄
+});
+
 //ask 라우트 추가: 면접 질문 생성 요청을 받음
 app.post("/ask", async (req, res) => {
   const prompt = "면접 질문 5개 생성해줘"; // 이 부분을 사용자가 원하는 질문으로 동적으로 바꿀 수도 있음
