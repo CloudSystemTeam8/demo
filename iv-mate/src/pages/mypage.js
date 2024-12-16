@@ -1,53 +1,28 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "../css/mypage.css";
 
 const MyPage = () => {
-  const [records, setRecords] = useState([]); // 시뮬레이션 기록 리스트
-  const [selectedRecord, setSelectedRecord] = useState(null); // 선택된 기록
+  const [histories, setHistories] = useState([]); // 시뮬레이션 기록 리스트
+  const [selectedHistory, setSelectedHistory] = useState(null); // 선택된 기록
+  const [totalFeedback, setTotalFeedback] = useState(""); // 종합 피드백
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
   const [error, setError] = useState(null); // 에러 상태
 
-  // 더미 데이터
-  const dummyRecords = [
-    {
-      id: "1",
-      date: "2024-11-27",
-      time: "10:00",
-      questions: [
-        {
-          question: "1분 자기소개해주세요.",
-          answer: "안녕하세요. 저는...",
-        },
-        {
-          question: "지원 동기를 말씀해주세요.",
-          answer: "제가 이 직무를 선택한 이유는...",
-        },
-      ],
-    },
-    {
-      id: "2",
-      date: "2024-12-01",
-      time: "15:30",
-      questions: [
-        {
-          question: "최근에 도전했던 경험을 이야기해주세요.",
-          answer: "저는...",
-        },
-      ],
-    },
-  ];
-
   // 더미 데이터를 로드하는 useEffect
   useEffect(() => {
-    async function fetchRecords() {
+    async function fetchHistory() {
       setIsLoading(true);
       try {
-        // 백엔드 연동 시 여기에 실제 API 호출이 들어감
-        // const response = await axios.get(`${BASE_URL}/simulation-records`);
-        // setRecords(response.data.records);
-
-        // 현재는 더미 데이터를 사용
-        setRecords(dummyRecords);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/ai/session_history`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+            },
+          }
+        );
+        setHistories(response.data);
       } catch (err) {
         console.error("기록 불러오기 실패:", err);
         setError("시뮬레이션 기록을 불러올 수 없습니다.");
@@ -55,64 +30,119 @@ const MyPage = () => {
         setIsLoading(false);
       }
     }
-    fetchRecords();
+    fetchHistory();
   }, []);
 
   // 선택된 기록 처리
-  const handleSelectRecord = (event) => {
-    const recordId = event.target.value;
-    const record = records.find((r) => r.id === recordId); // 선택된 기록 찾기
-    setSelectedRecord(record);
+  const handleSelectHistory = async (event) => {
+    setIsLoading(true);
+    const session_no = event.target.value;
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/ai/getInterview`,
+        {
+          params: { session_no },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
+      console.log(response.data);
+      setSelectedHistory(
+        response.data.finalHistory && response.data.finalHistory.length
+          ? response.data.finalHistory
+          : []
+      );
+      setTotalFeedback(
+        response.data.totalFeedback || "종합 피드백이 없습니다."
+      );
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("기록 불러오기 실패:", error);
+      setError("선택한 날짜의 기록을 불러올 수 없습니다.");
+    }
   };
 
-  // 로딩 중 상태 표시
+  // 시간 변환 함수
+  function timeFormat(isoStirng) {
+    const date = new Date(isoStirng);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hour}:${minute}`;
+  }
+
+  // 불러오는 과정 상태 표시
   if (isLoading) {
-    return <p>로딩 중... 잠시만 기다려주세요.</p>;
+    return (
+      <div className="history-container">
+        <p className="history-load">불러오는 중... 잠시만 기다려주세요.</p>
+      </div>
+    );
   }
 
   // 에러 상태 표시
   if (error) {
-    return <p>{error}</p>;
+    return (
+      <div className="date-container">
+        <p>{error}</p>
+      </div>
+    );
   }
 
   return (
     <div className="mypage-container">
       <h2>마이페이지</h2>
+      <div className="date-container">
+        {/* 기록이 없는 경우 */}
+        {histories.length === 0 && <p>시뮬레이션 기록이 없습니다.</p>}
 
-      {/* 기록이 없는 경우 */}
-      {records.length === 0 && <p>시뮬레이션 기록이 없습니다.</p>}
-
-      {/* 기록이 있는 경우 */}
-      {records.length > 0 && (
-        <div>
-          <div className="record-selector">
-            <label htmlFor="record-select">면접 기록</label>
-            <select id="record-select" onChange={handleSelectRecord}>
+        {/* 기록이 있는 경우 */}
+        {histories.length > 0 && (
+          <div className="history-selector">
+            <label htmlFor="history-select">면접 기록</label>
+            <select id="history-select" onChange={handleSelectHistory}>
               <option value="">기록을 선택하세요</option>
-              {records.map((record) => (
-                <option key={record.id} value={record.id}>
-                  {record.date} {record.time}
+              {histories.map((record, index) => (
+                <option key={index} value={record.session_no}>
+                  {timeFormat(record.session_date)} 직무 :{record.session_job}
                 </option>
               ))}
             </select>
           </div>
-
-          {/* 선택된 기록 표시 */}
-          {selectedRecord && (
-            <div className="record-details">
-              <h3>면접 기록 확인</h3>
-              {selectedRecord.questions.map((q, index) => (
-                <div key={index} className="question-answer">
-                  <div className="question">
-                    <strong>Q. {q.question}</strong>
-                  </div>
-                  <div className="answer">
-                    <p>A. {q.answer}</p>
-                  </div>
+        )}
+      </div>
+      {/* 선택된 기록 표시 */}
+      {selectedHistory && (
+        <div className="history-container">
+          <h3>면접 기록 확인</h3>
+          <div className="history-details">
+            {selectedHistory.map((history, index) => (
+              <div key={index} className="question-answer">
+                <div className="question">
+                  <strong>
+                    Q{index + 1}. {history.interview_question}
+                  </strong>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="answer">
+                  <p>A. {history.interview_answer}</p>
+                </div>
+                <div className="ai-feedback">
+                  <strong>AI 피드백</strong>
+                  <p>{history.feedback || "피드백이 없습니다."}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="ai-totalFeedback">
+            <h3>종합 피드백</h3>
+            <p>{totalFeedback}</p>
+          </div>
         </div>
       )}
     </div>

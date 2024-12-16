@@ -248,19 +248,6 @@ router.post("/saveInterview", (req, res) => {
   );
 });
 
-//인터뷰 내용 조회(gpt 전송 위함)
-router.get("/getInterview", (req, res) => {
-  const { session_no } = req.query; // 세션 번호로 조회
-
-  db.query(sql.get_interview, [session_no], (err, results) => {
-    if (err) {
-      console.error("오류: :", err);
-      return res.status(500).json({ error: "Database query failed" });
-    }
-    res.json(results); // 면접 질문과 답변 반환
-  });
-});
-
 //AI 피드백 불러오기
 router.get("/getAIResult", (req, res) => {
   // 사용자 토큰 검증
@@ -289,17 +276,93 @@ router.get("/getAIResult", (req, res) => {
   });
 });
 
-//사용자 인터뷰 시간 정보 전송
-router.get("/getSessionDate", (req, res) => {
-  const { user_no } = req.query;
+//사용자 인터뷰 시간 히스토리 정보 전송
+router.get("/session_history", (req, res) => {
+  // 사용자 토큰 검증
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-  db.query(sql.get_sessiondate, [user_no], (err, results) => {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user_no = decoded.no;
+
+  db.query(sql.session_history, [user_no], (err, results) => {
     if (err) {
       console.error("오류:", err);
       return res.status(500).json({ error: "Failed to fetch session dates" });
     }
     res.json(results);
   });
+});
+
+// 선택한 히스토리 내용 조회
+router.get("/getInterview", (req, res) => {
+  // 사용자 토큰 검증
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user_no = decoded.no;
+    const session_no = req.query.session_no;
+
+    // 인터뷰 상세 찾기
+    db.query(
+      sql.get_interview,
+      [user_no, session_no],
+      (err, interviewResults) => {
+        if (err) {
+          console.error("오류:", err);
+          return res.status(500).json({ error: "Database query failed" });
+        }
+
+        // Ai 피드백 가져오기
+        db.query(sql.get_airesult, [user_no, session_no], (err, aiResults) => {
+          if (err) {
+            console.error("오류:", err);
+            return res.status(500).json({ error: "Database query failed" });
+          }
+
+          // AI 피드백 형식 조정
+          const aiFeedback = aiResults[0]?.ai_result_content || "";
+
+          // 전체 피드백 기준 분리
+          const [quesionFeedback, totalFeedback] = aiFeedback.split(
+            "### 전체 답변에 대한 종합 피드백:\n"
+          );
+
+          // 각 질문에 대한 피드백 분리
+          const feedbackArray = quesionFeedback
+            .split(/\s*\*\*질문 \d+에 대한 피드백\*\*:\n+/) // 질문 피드백 패턴 기준으로 나눔
+            .flatMap((item) => item.split(/\n/)) // 각 항목을 줄바꿈 기준으로 추가 분리
+            .map((item) => item.trim()) // 각 피드백의 앞뒤 공백 제거
+            .filter((feedback) => feedback.trim() !== ""); // 빈 문자열 제거
+
+          // 질문과 답변에 AI 피드백 추가
+          const finalHistory = interviewResults.map((item, index) => {
+            const feedback = feedbackArray[index] || "피드백이 없습니다.";
+            return {
+              interview_question: item.interview_question,
+              interview_answer: item.interview_answer,
+              feedback: feedback,
+            };
+          });
+
+          // 최종 응답
+          return res.json({
+            finalHistory,
+            totalFeedback,
+          });
+        });
+      }
+    );
+  } catch (err) {
+    console.error("토큰 검증 실패:", err);
+    return res.status(401).json({ message: "Invalid token" });
+  }
 });
 
 //세션 별 사용자 인터뷰 정보 조회
@@ -313,6 +376,7 @@ router.get("/getDateInterview", (req, res) => {
         .status(500)
         .json({ error: "Failed to fetch interview information" });
     }
+    console.log(results);
     res.json(results);
   });
 });
