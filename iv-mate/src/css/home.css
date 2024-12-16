@@ -63,6 +63,7 @@
 .homepage-content h2 {
   font-size: 1.5rem;
   color: var(--primary-color);
+  font-family: var(--font-logo);
   margin-bottom: 1rem;
 }
 
