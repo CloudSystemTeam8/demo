@@ -5,6 +5,7 @@ import "../css/mypage.css";
 const MyPage = () => {
   const [histories, setHistories] = useState([]); // 시뮬레이션 기록 리스트
   const [selectedHistory, setSelectedHistory] = useState(null); // 선택된 기록
+  const [selectedSessionNo, setSelectedSessionNo] = useState(""); // 선택된 기록의 세션 번호
   const [totalFeedback, setTotalFeedback] = useState(""); // 종합 피드백
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
   const [error, setError] = useState(null); // 에러 상태
@@ -35,8 +36,11 @@ const MyPage = () => {
 
   // 선택된 기록 처리
   const handleSelectHistory = async (event) => {
-    setIsLoading(true);
     const session_no = event.target.value;
+    setSelectedSessionNo(session_no);
+    if (!session_no) return;
+
+    setIsLoading(true);
     try {
       const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/ai/getInterview`,
@@ -106,7 +110,11 @@ const MyPage = () => {
         {histories.length > 0 && (
           <div className="history-selector">
             <label htmlFor="history-select">면접 기록</label>
-            <select id="history-select" onChange={handleSelectHistory}>
+            <select
+              id="history-select"
+              onChange={handleSelectHistory}
+              value={selectedSessionNo}
+            >
               <option value="">기록을 선택하세요</option>
               {histories.map((record, index) => (
                 <option key={index} value={record.session_no}>
