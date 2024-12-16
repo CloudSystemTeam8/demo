@@ -53,10 +53,10 @@ router.get("/nick_check/:nickname", (req, res) => {
 });
 
 // 회원가입
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
   const user = req.body;
   console.log(user);
-  const encryptedPW = bcrypt.hash(user.password, 10); // 비밀번호 암호화
+  const encryptedPW = await bcrypt.hash(user.password, 10); // 비밀번호 암호화
 
   db.query(sql.email_check, [user.email], function (error, results, fields) {
     if (error) {
@@ -66,7 +66,7 @@ router.post("/register", (req, res) => {
     }
 
     // 중복 이메일이 아닌 경우
-    if (results.length <= 0) {
+    if (results.length === 0) {
       db.query(
         sql.register,
         [user.email, user.nickname, encryptedPW],
@@ -87,7 +87,7 @@ router.post("/register", (req, res) => {
 });
 
 // 로그인
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   const user = req.body;
 
   db.query(sql.email_check, [user.email], function (error, results, fields) {
@@ -98,33 +98,37 @@ router.post("/login", (req, res) => {
     }
     // 가입된 이메일이 맞는 경우
     if (results.length != 0) {
-      db.query(sql.login, [user.email], function (error, results, fields) {
-        // 암호화 된 비밀번호 확인
-        const same = bcrypt.compare(user.password, results[0].password);
-        if (!same) {
-          // 비밀번호 불일치
-          return res.status(200).json({
-            message: "incorrect_pw",
-          });
-        }
-        // 비밀번호 일치
-        db.query(
-          sql.user_no_get,
-          [user.email],
-          function (error, results, fields) {
-            //토큰 생성: 로그인 정보가 일치 -> 비밀 키 생성
-            const token = jwt.sign({ no: results[0].user_no }, "secret_key");
-
+      db.query(
+        sql.login,
+        [user.email],
+        async function (error, results, fields) {
+          // 암호화 된 비밀번호 확인
+          const same = await bcrypt.compare(user.password, results[0].password);
+          if (!same) {
+            // 비밀번호 불일치
             return res.status(200).json({
-              message: console.log(jwt.decode(token)),
-              //jwt.decode(token).no하면 no만 불러오기 가능
-              //토큰 리턴
-              token: token,
-              nickname: results[0].nickname,
+              message: "incorrect_pw",
             });
           }
-        );
-      });
+          // 비밀번호 일치
+          db.query(
+            sql.user_no_get,
+            [user.email],
+            function (error, results, fields) {
+              //토큰 생성: 로그인 정보가 일치 -> 비밀 키 생성
+              const token = jwt.sign({ no: results[0].user_no }, "secret_key");
+
+              return res.status(200).json({
+                message: console.log(jwt.decode(token)),
+                //jwt.decode(token).no하면 no만 불러오기 가능
+                //토큰 리턴
+                token: token,
+                nickname: results[0].nickname,
+              });
+            }
+          );
+        }
+      );
     }
     // 등록되지 않은 이메일인 경우
     else {
