@@ -1,30 +1,49 @@
 .simulation-container {
   padding: 2rem;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
+}
+
+.simulation-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.simulation-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .simulation-title {
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 1rem;
+  margin: 0;
 }
 
 .simulation-time {
   font-size: 0.875rem;
   color: var(--unselect-color);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .simulation-form {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .form-group {
   margin-bottom: 1.5rem;
+  max-width: 800px;
 }
 
 label {
@@ -34,8 +53,8 @@ label {
   margin-bottom: 0.5rem;
 }
 
-select,
-textarea {
+.simulation-form select,
+.simulation-form textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--unselect-color);
@@ -43,9 +62,9 @@ textarea {
   font-family: var(--font-content);
 }
 
-textarea {
-  width: 95%;
-  height: 150px;
+.simulation-form textarea {
+  width: 96%;
+  height: 18rem;
   resize: none;
 }
 
@@ -73,6 +92,6 @@ textarea {
 .char-count {
   text-align: right;
   font-size: 0.875rem;
-  color: var(--unselect-color); /* 비활성화 색상 */
+  color: var(--unselect-color);
   margin-top: 0.25rem;
 }

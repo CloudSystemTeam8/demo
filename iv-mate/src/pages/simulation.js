@@ -52,64 +52,68 @@ const Simulation = () => {
 
   return (
     <div className="simulation-container">
-      <h2 className="simulation-title">자기소개서 및 정보 입력하기</h2>
-      <p className="simulation-time">{new Date().toLocaleString()}</p>
+      <div className="simulation-view">
+        <div className="simulation-header">
+          <h2 className="simulation-title">자기소개서 및 정보 입력하기</h2>
+          <p className="simulation-time">{new Date().toLocaleString()}</p>
+        </div>
 
-      <div className="simulation-form">
-        <div className="form-group">
-          <label htmlFor="job-position">직무 입력하기</label>
-          <select
-            id="job-position"
-            value={jobPosition}
-            onChange={(e) => setJobPosition(e.target.value)}
+        <div className="simulation-form">
+          <div className="form-group">
+            <label htmlFor="job-position">직무 입력하기</label>
+            <select
+              id="job-position"
+              value={jobPosition}
+              onChange={(e) => setJobPosition(e.target.value)}
+            >
+              <option value="">직무 선택</option>
+              <option value="Developer">개발자</option>
+              <option value="Designer">디자이너</option>
+              <option value="Marketer">마케터</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="job-details">직무 상세 선택하기</label>
+            <select
+              id="job-details"
+              value={jobDetails}
+              onChange={(e) => setJobDetails(e.target.value)}
+            >
+              <option value="">직무 상세 선택</option>
+              <option value="Frontend">프론트엔드</option>
+              <option value="Backend">백엔드</option>
+              <option value="Fullstack">풀스택</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="self-introduction">자기소개서 입력</label>
+            <textarea
+              id="self-introduction"
+              placeholder="자기소개서 작성 유의사항 및 예시를 참고하여 작성하세요."
+              value={selfIntroduction}
+              onChange={(e) => {
+                if (e.target.value.length <= maxLength) {
+                  setSelfIntroduction(e.target.value);
+                }
+              }}
+            />
+            <p className="char-count">
+              {selfIntroduction.length} / {maxLength}자
+            </p>
+          </div>
+
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+          <button
+            className="next-button"
+            onClick={handleNextClick}
+            disabled={!jobPosition || !jobDetails || !selfIntroduction}
           >
-            <option value="">직무 선택</option>
-            <option value="Developer">개발자</option>
-            <option value="Designer">디자이너</option>
-            <option value="Marketer">마케터</option>
-          </select>
+            다음
+          </button>
         </div>
-
-        <div className="form-group">
-          <label htmlFor="job-details">직무 상세 선택하기</label>
-          <select
-            id="job-details"
-            value={jobDetails}
-            onChange={(e) => setJobDetails(e.target.value)}
-          >
-            <option value="">직무 상세 선택</option>
-            <option value="Frontend">프론트엔드</option>
-            <option value="Backend">백엔드</option>
-            <option value="Fullstack">풀스택</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="self-introduction">자기소개서 입력</label>
-          <textarea
-            id="self-introduction"
-            placeholder="자기소개서 작성 유의사항 및 예시를 참고하여 작성하세요."
-            value={selfIntroduction}
-            onChange={(e) => {
-              if (e.target.value.length <= maxLength) {
-                setSelfIntroduction(e.target.value);
-              }
-            }}
-          />
-          <p className="char-count">
-            {selfIntroduction.length} / {maxLength}자
-          </p>
-        </div>
-
-        {errorMessage && <p className="error-message">{errorMessage}</p>}
-
-        <button
-          className="next-button"
-          onClick={handleNextClick}
-          disabled={!jobPosition || !jobDetails || !selfIntroduction}
-        >
-          다음
-        </button>
       </div>
     </div>
   );

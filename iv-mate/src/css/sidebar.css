@@ -84,6 +84,12 @@
   background-color: #ffffff;
 }
 
+.login_info {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
 .logout-button {
   padding: 0.5rem 1rem;
   border: none;

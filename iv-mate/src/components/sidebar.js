@@ -84,8 +84,10 @@ const Sidebar = () => {
             {userNickname ? `${userNickname} 님, 취뽀까지 화이팅!` : "..."}
           </h3>
         </div>
-        <p>로그인 정보</p>
-        <p>{userEmail ? userEmail : "..."}</p>
+        <div className="login-info">
+          <p>로그인 정보</p>
+          <p>{userEmail ? userEmail : "..."}</p>
+        </div>
         <button className="logout-button" onClick={handleLogout}>
           LOGOUT
         </button>
