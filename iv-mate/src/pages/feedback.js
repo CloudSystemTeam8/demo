@@ -34,18 +34,31 @@ const Feedback = () => {
     };
 
     getAiFeedback();
-  }, [session_no]); // 종속성 배열에 session_no 추가
+  }, [session_no]);
+
+  const handleHomeClick = () => {
+    navigate("/app/home");
+  };
 
   return (
     <div className="feedback-container">
-      <h1>면접 피드백 페이지</h1>
-      {errorMessage ? (
-        <p className="error">{errorMessage}</p>
-      ) : (
-        <div className="feedback-content">
-          <p>{feedback}</p>
+      <div className="feedback-view">
+        <div className="feedback-header">
+          <h2 className="feedback-title">면접 MATE의 피드백</h2>
         </div>
-      )}
+        <div className="feedback-form">
+          {errorMessage ? (
+            <p className="error">{errorMessage}</p>
+          ) : (
+            <div className="feedback-content">
+              <p>{feedback}</p>
+              <button className="back-button" onClick={handleHomeClick}>
+                홈으로 돌아가기
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
