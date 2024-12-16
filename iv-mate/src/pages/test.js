@@ -15,9 +15,11 @@ const Test = () => {
   const [answers, setAnswers] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isFollowUp, setIsFollowUp] = useState(false); // 꼬리질문 여부
-  const [feedback, setFeedback] = useState(false); // 피드백 준비 여부
+  const [isFeedback, setIsFeedback] = useState(false); // 피드백 준비 여부
+  const [isLast, setIsLast] = useState(false); // 마지막 질문 여부
   const [interviewSet, setInterviewSet] = useState([]); //질문,답변 셋 저장
   const navigate = useNavigate();
+  const maxLength = 1500;
 
   // 현재 질문 가져오기
   const currentQuestion = questions[currentQuestionIndex];
@@ -26,10 +28,15 @@ const Test = () => {
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1); // 다음 질문으로 이동
-    } else if (!isFollowUp) {
+    } else if (
+      currentQuestionIndex == questions.length - 1 &&
+      questions.length < 8
+    ) {
+      setIsLast(true);
       setIsFollowUp(true); // 꼬리질문 준비
-    } else {
-      setFeedback(true); // 피드백 준비
+    } else if (!isFollowUp && questions.length >= 8) {
+      setIsLast(true);
+      setIsFeedback(true); // 피드백 준비
     }
   };
 
@@ -69,6 +76,7 @@ const Test = () => {
 
   // 꼬리질문 요청
   const handleFollowUp = async () => {
+    let initquesLength = questions.length;
     setIsLoading(true);
     try {
       const response = await axios.post(
@@ -77,16 +85,20 @@ const Test = () => {
       );
       console.log(response.data);
       setQuestions((prev) => [...prev, ...response.data.questions]);
-      setCurrentQuestionIndex(5); // 새 질문 시작
+      setCurrentQuestionIndex(initquesLength); // 새 질문 시작
     } catch (error) {
       console.error("꼬리질문 생성 실패", error);
     } finally {
       setIsLoading(false);
+      setIsFollowUp(false);
+      setIsLast(false);
     }
   };
 
   // 피드백 요청
   const handleFeedback = async () => {
+    setIsFeedback(true);
+    setIsFollowUp(false);
     setIsLoading(true);
     try {
       const response = await axios.post(
@@ -105,16 +117,29 @@ const Test = () => {
       console.error("피드백 생성 실패", error);
     } finally {
       setIsLoading(false);
+      setIsLast(false);
     }
   };
 
-  if (isLoading) {
-    return <p>로딩 중... 잠시만 기다려주세요.</p>; // 로딩 메시지
+  if (isLoading && isFollowUp) {
+    return (
+      <div className="test-container">
+        <h1 className="test-loading">
+          꼬리질문 생성 중... 잠시만 기다려주세요.
+        </h1>
+      </div>
+    );
+  } else if (isLoading && isFeedback) {
+    return (
+      <div className="test-container">
+        <h1 className="test-loading">피드백 생성 중... 잠시만 기다려주세요.</h1>
+      </div>
+    );
   }
 
   return (
     <div className="test-container">
-      <h2>면접 시뮬레이션</h2>
+      <h2>각 문항에 대해 답변을 작성해주세요.</h2>
       {currentQuestionIndex < questions.length && (
         <div className="question-box">
           <h3>{currentQuestion}</h3>
@@ -129,10 +154,13 @@ const Test = () => {
                 })
               }
             />
+            <p className="char-count">
+              {(answers[currentQuestionIndex] || "").length} / {maxLength}자
+            </p>
             <div className="send_button">
               <button
                 onClick={handleSendAnswer}
-                disabled={!answers[currentQuestionIndex]}
+                disabled={!answers[currentQuestionIndex] || isLast}
               >
                 전송
               </button>
@@ -141,14 +169,14 @@ const Test = () => {
         </div>
       )}
 
-      {isFollowUp && !feedback && (
+      {isFollowUp && !isFeedback && (
         <div className="followup-container">
           <button onClick={handleFollowUp}>꼬리질문 받기</button>
           <button onClick={handleFeedback}>면접 피드백 받기</button>
         </div>
       )}
 
-      {feedback && (
+      {isFeedback && (
         <div className="followup-container">
           <button onClick={handleFeedback}>면접 피드백 받기</button>
         </div>

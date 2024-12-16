@@ -7,7 +7,7 @@ const { callChatGPT } = require("../src/chatgpt");
 
 module.exports = router;
 
-router.post("/sendInfoo", async (req, res) => {
+router.post("/sendInfo", async (req, res) => {
   // 사용자 토큰 검증
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -91,7 +91,7 @@ router.post("/sendInfoo", async (req, res) => {
 router.post("/generate-followup", async (req, res) => {
   const Interviews = req.body.interviewSet
     .map(
-      ([question, answer], index) =>
+      ({ question, answer }, index) =>
         `Q${index + 1}: ${question}\nA${index + 1}: ${answer}`
     ) // 각 질문-답 조합을 "Q1: 질문\nA1: 답" 형식으로 변환
     .join("\n");
@@ -100,7 +100,8 @@ router.post("/generate-followup", async (req, res) => {
     아래 인터뷰 내용을 기반으로 꼬리 질문 3개를 만들어 주세요:
     ${Interviews}
     꼬리 질문 3개를 번호와 함께 작성해 주세요. 당신은 해당 분야의 전문가이며 인사 담당자입니다. 실제로 나올 법한 면접 질문을 제공해야합니다.
-    무조건 3개의 질문만 '1.'과 같은 번호를 붙여 출력해야 합니다. '면접을 시작하겠습니다' 같은 다른 부가 내용이 출력되면 안됩니다.`;
+    무조건 3개의 질문만 '1.'과 같은 번호를 붙여 출력해야 합니다. '면접을 시작하겠습니다' 같은 다른 부가 내용이 출력되면 안됩니다. 
+    꼬리질문을 시작할 때 '갈등상황에서 어떤 행동을 하셨다고 했는데'와 같이 인터뷰 내용을 예시와 같은 형식으로 인용하여 질문을 시작해야합니다.`;
 
   // GPT API 호출
   const gptResponse = await callChatGPT(prompt);
@@ -159,12 +160,25 @@ router.post("/generate-feedback", async (req, res) => {
       .join("\n\n");
 
     const prompt = `
-    사용자가 아래와 같은 인터뷰 질문과 답변을 제공했습니다.:
-    ${interviewText}
-    질문과 답변은 출력하지 않으며, 각각 질문의 대한 피드백만 한 문단으로 도출하세요. 각 질문에 대한 피드백이 무조건 있어야 합니다.
-    또한 마지막에는 전체 답변에 대한 피드백을 한문단으로 주며, 
-    각 피드백은 사용자가 자신의 답변을 돌아볼 수 있게 비판적 내용으로 구성하고 개선할 부분이 있으면
-     구체적으로 언급해주세요.`;
+    당신은 해당 분야의 전문가이며 인사 담당자입니다. 사용자가 아래와 같은 인터뷰 질문과 답변을 제공했습니다.
+
+1. 질문의 개수는 고정되어 있지 않으며, 모든 질문에 대해 반드시 각각 하나의 피드백 문단을 작성해야 합니다.
+2. 각 질문과 답변은 출력하지 않으며, **모든 질문에 대한 피드백을 작성**하세요.
+3. 피드백은 각 문항에 무조건 5줄 이상이어야 합니다. 또한 비판적이고 구체적인 개선 방향을 포함해야 하며, 사용자가 자신의 답변을 개선할 수 있도록 자세한 도움을 제공해야 합니다.
+4. 마지막에는 전체 답변에 대한 종합적인 피드백을 작성하세요.
+5. 출력 형식은 질문 번호별로 나누어 명확히 작성하며, 질문 개수에 따라 반복적으로 피드백을 작성해야 합니다.
+
+질문과 답변:
+${interviewText}
+
+출력 형식:
+[각 질문에 대해 다음 형식을 반복적으로 작성합니다.]
+**질문 {번호}에 대한 피드백**:
+[작성]
+
+### 전체 답변에 대한 종합 피드백
+[작성]
+`;
 
     const ai_result_content = await callChatGPT(prompt);
 

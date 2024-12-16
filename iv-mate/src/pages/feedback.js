@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../css/feedback.css";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 
 const Feedback = () => {
   const location = useLocation(); // 세션번호 받기
@@ -51,7 +52,7 @@ const Feedback = () => {
             <p className="error">{errorMessage}</p>
           ) : (
             <div className="feedback-content">
-              <p>{feedback}</p>
+              <ReactMarkdown>{feedback}</ReactMarkdown>
               <button className="back-button" onClick={handleHomeClick}>
                 홈으로 돌아가기
               </button>

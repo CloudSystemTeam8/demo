@@ -75,7 +75,7 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-logo">
         <img src={SubLogo} alt="면접MATE" />
-        <h2>면접MATE</h2>
+        <h2>면접 MATE</h2>
       </div>
 
       <div className="sidebar-info">

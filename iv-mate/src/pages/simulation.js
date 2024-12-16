@@ -8,7 +8,8 @@ const Simulation = () => {
   const [jobPosition, setJobPosition] = useState("");
   const [jobDetails, setJobDetails] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 상태 추가
+  const [errorMessage, setErrorMessage] = useState(""); //에러 메시지 상태
+  const [isLoading, setIsLoading] = useState(false); //질문 생성 표시
   const maxLength = 1500;
 
   const handleNextClick = async () => {
@@ -18,10 +19,11 @@ const Simulation = () => {
         setErrorMessage("모든 필드를 작성해주세요.");
         return;
       }
+      setIsLoading(true);
 
       // AI 정보 전송
       const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/ai/sendInfoo`,
+        `${process.env.REACT_APP_API_BASE_URL}/ai/sendInfo`,
         {
           jobPosition,
           jobDetails,
@@ -36,6 +38,7 @@ const Simulation = () => {
 
       console.log("AI 응답:", response.data.questions);
       console.log("세션번호", response.data.session_no);
+      setIsLoading(false);
 
       // 시뮬레이션 페이지로 이동
       navigate("/app/test", {
@@ -91,7 +94,7 @@ const Simulation = () => {
             <label htmlFor="self-introduction">자기소개서 입력</label>
             <textarea
               id="self-introduction"
-              placeholder="자기소개서 작성 유의사항 및 예시를 참고하여 작성하세요."
+              placeholder="여기에 자기소개서 작성해주세요. 최대 작성가능한 글자 수는 1500자입니다."
               value={selfIntroduction}
               onChange={(e) => {
                 if (e.target.value.length <= maxLength) {
@@ -106,13 +109,19 @@ const Simulation = () => {
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          <button
-            className="next-button"
-            onClick={handleNextClick}
-            disabled={!jobPosition || !jobDetails || !selfIntroduction}
-          >
-            다음
-          </button>
+          {isLoading ? (
+            <button className="next-button" onClick={handleNextClick} disabled>
+              질문 생성중...
+            </button>
+          ) : (
+            <button
+              className="next-button"
+              onClick={handleNextClick}
+              disabled={!jobPosition || !jobDetails || !selfIntroduction}
+            >
+              다음
+            </button>
+          )}
         </div>
       </div>
     </div>
